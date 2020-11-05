@@ -140,7 +140,7 @@ If we try to call `#choose_liquor` with an instance of a bartender, we get an er
 
 ```ruby
 phil.choose_liquor
-#=>NoMethodError: private method `choose_liquor' called for #<Bartender:0x007f9f5b03d318 @name="Phil">
+# NoMethodError: private method `choose_liquor' called for #<Bartender:0x007f9f5b03d318 @name="Phil">
 ```
 
 Again, private methods cannot be called by an explicit receiver. Because `phil` is the explicit receiver of `choose_liquor`, the method errors out.
@@ -149,7 +149,7 @@ However, if we call `make_drink`, the `choose_liquor` method works. What gives?
 
 ```ruby
 phil.make_drink
-#=>Here is your drink. It contains ["whiskey", "vermouth", "olives"]
+# Here is your drink. It contains ["whiskey", "vermouth", "olives"]
 ```
 
 The `choose_liquor` method was called without any receiver. Ruby sees the missing receiver and assumes it to be self, or the current object. When `choose_liquor` is called, self is an instance of Bartender. Only a Bartender object can tell itself to choose a liquor, a mixer, and a garnish. Phil can tell himself to choose a liquor, garnish, etc., but we cannot instruct Phil to do so. Private methods restrict an outsider from calling methods that belong to an object. However, we, as customers, are free to ask a bartender to make us a drink (`make_drink`).
