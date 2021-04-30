@@ -1,10 +1,10 @@
 # Private Methods
 
-## Objectives
+## Learning Goals
 
-1. Define private methods.
-2. Understand the context in which you will use such a method.
-3. See how private methods are defined.
+- Define private methods
+- Understand the context in which you will use such a method
+- See how private methods are defined
 
 ## Background: Instance and Class Methods
 
