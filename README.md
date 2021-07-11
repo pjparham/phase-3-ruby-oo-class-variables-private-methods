@@ -22,7 +22,7 @@ class Bartender
   end
 
   def intro
-    "Hello, my name is #{name}!"
+    "Hello, my name is #{self.name}!"
   end
 end
 
@@ -41,26 +41,26 @@ we had a method that kept track of all of the new instances of `Bartender`:
 class Bartender
   attr_accessor :name
 
-  BARTENDERS = []
+  @@all = []
 
   def initialize(name)
     @name = name
-    BARTENDERS << self
+    @@all << self
   end
 
   def self.all
-    BARTENDERS
+    @@all
   end
 
   def intro
-    "Hello, my name is #{name}!"
+    "Hello, my name is #{self.name}!"
   end
 end
 ```
 
-Here we're shoveling in every new instance of `Bartender` `initialized` into a
-constant that holds onto all bartenders. Then we have a class method `self.all`,
-which we'll call on the class itself to return all of the bartenders.
+Here we're shoveling in every new instance of `Bartender` into a class variable
+that holds onto all bartenders. Then we have a class method `self.all`, which
+we'll call on the class itself to return all of the bartenders.
 
 ```ruby
 phil = Bartender.new("Phil")
@@ -72,17 +72,17 @@ Bartender.all
 
 ## Public vs. Private Methods
 
-### Public Methods
+### Defining Public Methods
 
 We've already been writing public methods: `intro` and `self.all`. We can call
 them from outside the scope of the class declaration, like on the instance of
 the class or the class itself. Public methods are called by an explicit
 receiver: the instance of `phil` explicitly receives the method `intro`.
 
-### Private Methods
+### Defining Private Methods
 
 Private methods cannot be called by an explicit receiver. What does that mean?
-It means we can only call private methods within the context of the defining
+It means we can only call private methods **within** the context of the defining
 class: the receiver of a private method is always `self`.
 
 ### Why Use Private Methods?
@@ -95,38 +95,46 @@ bartender for a drink (from a menu of options), but you can't instruct him or
 her on each step. The smaller steps that make up the bartender's job can be
 considered private methods.
 
-Private methods also signal to other developers that this method is *depended*
+Private methods also signal to other developers that this method is _depended_
 on by other methods in your program. It signals that they should beware of
 removing such a method for fear of breaking other parts of the program that they
 may not realize rely on it.
 
 ### Building Private Methods
 
-We've already written a private method in our `Bartender` class: `initialize`.
+We've already written a private method in our `Bartender` class: `#initialize`.
 
 ```ruby
 phil.initialize
 #=>NoMethodError: private method `initialize' called for #<Bartender:0x007fafb4257dd8 @name="Phil">
 ```
 
-Private methods, aside from initialize, are usually written with the word
-`private` above them. Let's make a private method called `choose_liquor`
+The `#initialize` method is special for a couple reasons:
 
-We'll also create a public method `make_drink` that calls on `choose_liquor`.
+- We don't invoke it directly; we use `ClassName.new` to create a new instance
+  and then invoke the `#initialize` method on that instance.
+- It is a private method by default.
+
+Private methods, aside from initialize, are usually written with the word
+`private` above them. Let's make some private methods: `#choose_liquor`,
+`#choose_mixer`, and `#choose_garnish`.
+
+We'll also create a public method `#make_drink` that calls on those private
+methods.
 
 ```ruby
 class Bartender
   attr_accessor :name
 
-  BARTENDERS = []
+  @@all = []
 
   def initialize(name)
     @name = name
-    BARTENDERS << self
+    @@all << self
   end
 
   def self.all
-    BARTENDERS
+    @@all
   end
 
   def intro
@@ -138,27 +146,28 @@ class Bartender
     choose_liquor
     choose_mixer
     choose_garnish
-    return "Here is your drink. It contains #{@cocktail_ingredients}"
+    "Here is your drink. It contains #{@cocktail_ingredients}"
   end
 
   private
 
   def choose_liquor
-    @cocktail_ingredients.push("whiskey")
+    @cocktail_ingredients << "whiskey"
   end
 
   def choose_mixer
-    @cocktail_ingredients.push("vermouth")
+    @cocktail_ingredients << "vermouth"
   end
 
   def choose_garnish
-    @cocktail_ingredients.push("olives")
+    @cocktail_ingredients << "olives"
   end
 
 end
 ```
 
-If we try to call `#choose_liquor` with an instance of a bartender, we get an error:
+If we try to call `#choose_liquor` with an instance of a bartender, we get an
+error:
 
 ```ruby
 phil.choose_liquor
@@ -175,17 +184,31 @@ phil.make_drink
 # Here is your drink. It contains ["whiskey", "vermouth", "olives"]
 ```
 
-The `choose_liquor` method was called without any receiver. Ruby sees the
+The `#choose_liquor` method was called without any receiver. Ruby sees the
 missing receiver and assumes it to be self, or the current object. When
-`choose_liquor` is called, self is an instance of Bartender. Only a Bartender
+`#choose_liquor` is called, self is an instance of Bartender. Only a Bartender
 object can tell itself to choose a liquor, a mixer, and a garnish. Phil can tell
 himself to choose a liquor, garnish, etc., but we cannot instruct Phil to do so.
+
 Private methods restrict an outsider from calling methods that belong to an
 object. However, we, as customers, are free to ask a bartender to make us a
-drink (`make_drink`).
+drink (`#make_drink`).
 
 **Note:** Prior to version 2.7 of Ruby, if we tried to call our private methods
 from `#make_drink` using `self` (e.g., `self.choose_liquor` rather than just
 `choose_liquor`), we would get that same 'private method' error. However,
 beginning with version 2.7 of Ruby, private methods can be called from other
 methods in the Class with or without the `self` keyword.
+
+## Conclusion
+
+When defining a class in Ruby, it's important to consider what kind of interface
+the class exposes to the rest of your code base. By using a mix of private and
+public methods, you can more carefully choose what methods are callable from
+outside the class, and what methods are only callable from within the class.
+Methods that are meant to be helper methods within your class, for example, are
+good candidates to be private methods.
+
+## Resources
+
+- [Ruby Method Visibility](https://www.rubyguides.com/2018/10/method-visibility/)
